@@ -1,0 +1,201 @@
+> install.packages("devtools")
+trying URL 'https://cran.rstudio.com/bin/macosx/contrib/4.0/devtools_2.4.1.tgz'
+Content type 'application/x-gzip' length 393370 bytes (384 KB)
+==================================================
+  downloaded 384 KB
+
+
+The downloaded binary packages are in
+/var/folders/vn/xr3_hb750099wqcg_9yyrr640000gn/T//RtmpIO8Y7J/downloaded_packages
+> require(tidyverse)
+Loading required package: tidyverse
+── Attaching packages ─────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
+✓ ggplot2 3.3.3     ✓ purrr   0.3.4
+✓ tibble  3.1.0     ✓ dplyr   1.0.6
+✓ tidyr   1.1.3     ✓ stringr 1.4.0
+✓ readr   1.4.0     ✓ forcats 0.5.1
+── Conflicts ────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+x dplyr::filter() masks stats::filter()
+x dplyr::lag()    masks stats::lag()
+> require(tidygraph)
+Loading required package: tidygraph
+
+Attaching package: ‘tidygraph’
+
+The following object is masked from ‘package:stats’:
+  
+  filter
+
+> require(intergraph)
+Loading required package: intergraph
+> require(ggnetwork)
+Loading required package: ggnetwork
+> require(netrankr)
+Loading required package: netrankr
+> require(ggrepel)
+Loading required package: ggrepel
+> 
+  > 
+  
+  
+  > from <- c("Asif", "Deng", "Gita", "Paul", "Sure", "Sure")
+> to <- c("Gita", "Gita", "Anne", "Anne", "Paul", "Asif")
+> edge1 <- tibble(from, to)
+> str(edge1)
+tibble [6 × 2] (S3: tbl_df/tbl/data.frame)
+$ from: chr [1:6] "Asif" "Deng" "Gita" "Paul" ...
+$ to  : chr [1:6] "Gita" "Gita" "Anne" "Anne" ...
+> class(edge1)
+[1] "tbl_df"     "tbl"        "data.frame"
+> edge1
+# A tibble: 6 x 2
+from  to   
+<chr> <chr>
+  1 Asif  Gita 
+2 Deng  Gita 
+3 Gita  Anne 
+4 Paul  Anne 
+5 Sure  Paul 
+6 Sure  Asif 
+> 
+  
+  
+  > talk <- tbl_graph(edges = edge1, directed = FALSE)
+> talk
+# A tbl_graph: 6 nodes and 6 edges
+#
+# An undirected simple graph with 1 component
+#
+# Node Data: 6 x 1 (active)
+name 
+<chr>
+  1 Asif 
+2 Gita 
+3 Deng 
+4 Anne 
+5 Paul 
+6 Sure 
+#
+# Edge Data: 6 x 2
+from    to
+<int> <int>
+  1     1     2
+2     2     3
+3     2     4
+# … with 3 more rows
+> class(talk)
+[1] "tbl_graph" "igraph"   
+> 
+  
+  > talk %>% activate(edges) %>% as_tibble()
+# A tibble: 6 x 2
+from    to
+<int> <int>
+  1     1     2
+2     2     3
+3     2     4
+4     4     5
+5     5     6
+6     1     6
+> talk %>% activate(nodes) %>% as_tibble()
+# A tibble: 6 x 1
+name 
+<chr>
+  1 Asif 
+2 Gita 
+3 Deng 
+4 Anne 
+5 Paul 
+6 Sure 
+> 
+  > 
+  
+  
+  > talk_n <- asNetwork(talk)
+> talk_n
+Network attributes:
+  vertices = 6 
+directed = FALSE 
+hyper = FALSE 
+loops = FALSE 
+multiple = FALSE 
+bipartite = FALSE 
+total edges= 6 
+missing edges= 0 
+non-missing edges= 6 
+
+Vertex attribute names: 
+  vertex.names 
+
+No edge attributes
+> 
+  > talk_g <- ggnetwork(talk_n)
+> class(talk_g)
+[1] "data.frame"
+> talk_g
+x         y vertex.names      xend      yend
+2  0.3691201 0.4577545         Gita 0.0000000 0.3900394
+3  0.3691201 0.4577545         Gita 0.6516287 0.0000000
+4  0.5715263 1.0000000         Asif 0.3691201 0.4577545
+5  0.5715263 1.0000000         Asif 0.9530592 0.8602025
+6  0.6516287 0.0000000         Anne 1.0000000 0.2692529
+8  1.0000000 0.2692529         Paul 0.9530592 0.8602025
+1  0.5715263 1.0000000         Asif 0.5715263 1.0000000
+21 0.3691201 0.4577545         Gita 0.3691201 0.4577545
+31 0.0000000 0.3900394         Deng 0.0000000 0.3900394
+41 0.6516287 0.0000000         Anne 0.6516287 0.0000000
+51 1.0000000 0.2692529         Paul 1.0000000 0.2692529
+61 0.9530592 0.8602025         Sure 0.9530592 0.8602025
+
+> talk_gg <- ggplot(talk_g, aes(x = x, y = y, xend = xend, yend = yend))+
+  +     geom_edges(color = "tomato") +
+  +     geom_nodes(alpha = 0.6, size = 5) +
+  +     geom_nodetext(aes(label=vertex.names), col="cyan") +
+  +     theme_blank()
+> talk_gg
+> 
+  > devtools::install_github("DougLuke/UserNetR")
+require(UserNetR)
+
+  
+> ggnetplot <- function(Net = Bali)
+  + {
+    +     Net <- ggnetwork(Net, layout = "kamadakawai")
+    +     ggplot(Net, aes(x, y, xend = xend, yend = yend)) +
+      +         geom_edges(col = "tomato") +
+      +         geom_nodetext_repel(aes(label = vertex.names), col = "black", size = 3) +
+      +         theme_blank()
+    + }
+> ggnetplot(Bali)
+
+> ggnetplot <- function(Net = Bali)
+  + {
+    +     Net <- ggnetwork(Net, layout = "circle")
+    +     ggplot(Net, aes(x, y, xend = xend, yend = yend)) +
+      +         geom_edges(col = "tomato") +
+      +         geom_nodetext_repel(aes(label = vertex.names), col = "black", size = 3) +
+      +         theme_blank()
+    + }
+> ggnetplot(Bali)
+> 
+  
+  > ggnetplot <- function(Net = Bali)
+    + {
+      +     Net <- ggnetwork(Net, layout = "kamadakawai")
+      +     ggplot(Net, aes(x, y, xend = xend, yend = yend)) +
+        +         geom_edges(col = "tomato") +
+        +         geom_nodetext_repel(aes(label = role), col = "black", size = 3) +
+        +         theme_blank()
+      + }
+> ggnetplot(Bali)
+> 
+  
+  ggnetplot <- function(Net = Bali)
+    + {
+      +     Net <- ggnetwork(Net, layout = "circle")
+      +     ggplot(Net, aes(x, y, xend = xend, yend = yend)) +
+        +         geom_edges(col = "tomato") +
+        +         geom_nodetext_repel(aes(label = role), col = "black", size = 3) +
+        +         theme_blank()
+      + }
+> ggnetplot(Bali)
