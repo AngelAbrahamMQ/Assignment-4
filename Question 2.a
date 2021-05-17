@@ -1,0 +1,130 @@
+> require(tidyverse)
+Loading required package: tidyverse
+── Attaching packages ─────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
+✓ ggplot2 3.3.3     ✓ purrr   0.3.4
+✓ tibble  3.1.0     ✓ dplyr   1.0.6
+✓ tidyr   1.1.3     ✓ stringr 1.4.0
+✓ readr   1.4.0     ✓ forcats 0.5.1
+── Conflicts ────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+x dplyr::filter() masks stats::filter()
+x dplyr::lag()    masks stats::lag()
+> require(WDI)
+Loading required package: WDI
+> require(maps)
+Loading required package: maps
+
+Attaching package: ‘maps’
+
+The following object is masked from ‘package:purrr’:
+  
+  map
+
+> require(countrycode)
+Loading required package: countrycode
+> 
+  
+  WDIsearch("gdp.*capita.*PPP")
+indicator              name                                                  
+[1,] "6.0.GDPpc_constant"   "GDP per capita, PPP (constant 2011 international $) "
+[2,] "NY.GDP.PCAP.PP.CD"    "GDP per capita, PPP (current international $)"       
+[3,] "NY.GDP.PCAP.PP.KD"    "GDP per capita, PPP (constant 2017 international $)" 
+[4,] "NY.GDP.PCAP.PP.KD.87" "GDP per capita, PPP (constant 1987 international $)" 
+[5,] "NY.GDP.PCAP.PP.KD.ZG" "GDP per capita, PPP annual growth (%)"               
+> WDIsearch("CO2.*capita")
+indicator        name                                                                
+[1,] "EN.ATM.CO2E.PC" "CO2 emissions (metric tons per capita)"                            
+[2,] "EN.ATM.METH.PC" "Methane emissions (kt of CO2 equivalent per capita)"               
+[3,] "EN.ATM.NOXE.PC" "Nitrous oxide emissions (metric tons of CO2 equivalent per capita)"
+> wdi_data <- WDI(indicator = c("NY.GDP.PCAP.PP.KD","EN.ATM.CO2E.PC"), start=2010, end=2010, extra=TRUE)
+> wdi_data = as_tibble(wdi_data)
+> glimpse(wdi_data)
+Rows: 264
+Columns: 12
+$ iso2c             <chr> "1A", "1W", "4E", "7E", "8S", "AD", "AE", "AF", "AG", "AL", "AM", "AO", "AR", "A…
+$ country           <chr> "Arab World", "World", "East Asia & Pacific (excluding high income)", "Europe & …
+$ year              <int> 2010, 2010, 2010, 2010, 2010, 2010, 2010, 2010, 2010, 2010, 2010, 2010, 2010, 20…
+$ NY.GDP.PCAP.PP.KD <dbl> 13347.1121, 13904.6291, 8526.3391, 17796.7336, 4064.7816, NA, 54921.8398, 1957.0…
+$ EN.ATM.CO2E.PC    <dbl> 4.63064477, 4.61259410, 5.08874224, 7.76735471, 1.20673417, 6.12259470, 18.55247…
+$ iso3c             <chr> "ARB", "WLD", "EAP", "ECA", "SAS", "AND", "ARE", "AFG", "ATG", "ALB", "ARM", "AG…
+$ region            <chr> "Aggregates", "Aggregates", "Aggregates", "Aggregates", "Aggregates", "Europe & …
+$ capital           <chr> "", "", "", "", "", "Andorra la Vella", "Abu Dhabi", "Kabul", "Saint John's", "T…
+$ longitude         <chr> "", "", "", "", "", "1.5218", "54.3705", "69.1761", "-61.8456", "19.8172", "44.5…
+$ latitude          <chr> "", "", "", "", "", "42.5075", "24.4764", "34.5228", "17.1175", "41.3317", "40.1…
+$ income            <chr> "Aggregates", "Aggregates", "Aggregates", "Aggregates", "Aggregates", "High inco…
+$ lending           <chr> "Aggregates", "Aggregates", "Aggregates", "Aggregates", "Aggregates", "Not class…
+> wdi_data <- wdi_data %>% rename(GDPpercap=NY.GDP.PCAP.PP.KD,Emit_CO2percap=EN.ATM.CO2E.PC)
+> glimpse(wdi_data)
+Rows: 264
+Columns: 12
+$ iso2c          <chr> "1A", "1W", "4E", "7E", "8S", "AD", "AE", "AF", "AG", "AL", "AM", "AO", "AR", "AS",…
+$ country        <chr> "Arab World", "World", "East Asia & Pacific (excluding high income)", "Europe & Cen…
+$ year           <int> 2010, 2010, 2010, 2010, 2010, 2010, 2010, 2010, 2010, 2010, 2010, 2010, 2010, 2010,…
+$ GDPpercap      <dbl> 13347.1121, 13904.6291, 8526.3391, 17796.7336, 4064.7816, NA, 54921.8398, 1957.0293…
+$ Emit_CO2percap <dbl> 4.63064477, 4.61259410, 5.08874224, 7.76735471, 1.20673417, 6.12259470, 18.55247271…
+$ iso3c          <chr> "ARB", "WLD", "EAP", "ECA", "SAS", "AND", "ARE", "AFG", "ATG", "ALB", "ARM", "AGO",…
+$ region         <chr> "Aggregates", "Aggregates", "Aggregates", "Aggregates", "Aggregates", "Europe & Cen…
+$ capital        <chr> "", "", "", "", "", "Andorra la Vella", "Abu Dhabi", "Kabul", "Saint John's", "Tira…
+$ longitude      <chr> "", "", "", "", "", "1.5218", "54.3705", "69.1761", "-61.8456", "19.8172", "44.509"…
+$ latitude       <chr> "", "", "", "", "", "42.5075", "24.4764", "34.5228", "17.1175", "41.3317", "40.1596…
+$ income         <chr> "Aggregates", "Aggregates", "Aggregates", "Aggregates", "Aggregates", "High income"…
+$ lending        <chr> "Aggregates", "Aggregates", "Aggregates", "Aggregates", "Aggregates", "Not classifi…
+> 
+
+ write_csv(wdi_data,"wdi_CO2_GDP.csv")
+> wdi <- read_csv("wdi_CO2_GDP.csv")
+
+── Column specification ────────────────────────────────────────────────────────────────────────────────────
+cols(
+  iso2c = col_character(),
+  country = col_character(),
+  year = col_double(),
+  GDPpercap = col_double(),
+  Emit_CO2percap = col_double(),
+  iso3c = col_character(),
+  region = col_character(),
+  capital = col_character(),
+  longitude = col_double(),
+  latitude = col_double(),
+  income = col_character(),
+  lending = col_character()
+)
+
+> summary(wdi$GDPpercap)
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max.     NA's 
+846.2   4122.0  11381.8  18760.8  24395.0 117538.0       28 
+> 
+  
+  
+  
+
+dat_map <- map_data("world")
+> dim(dat_map)
+[1] 99338     6
+> head(dat_map) 
+       long      lat group order region subregion
+1 -69.89912 12.45200     1     1  Aruba      <NA>
+2 -69.89571 12.42300     1     2  Aruba      <NA>
+3 -69.94219 12.43853     1     3  Aruba      <NA>
+4 -70.00415 12.50049     1     4  Aruba      <NA>
+5 -70.06612 12.54697     1     5  Aruba      <NA>
+6 -70.05088 12.59707     1     6  Aruba      <NA>
+> ggplot(dat_map,aes(x=long,y=lat,group=group))+geom_polygon(fill="white",colour="black")
+
+
+
+dat_map$ccode<- countrycode(dat_map$region,origin="country.name",destination="wb")
+Warning message:
+  In countrycode(dat_map$region, origin = "country.name", destination = "wb") :
+  Some values were not matched unambiguously: Anguilla, Antarctica, Ascension Island, Azores, Barbuda, Bonaire, Canary Islands, Chagos Archipelago, Christmas Island, Cocos Islands, Cook Islands, Falkland Islands, French Guiana, French Southern and Antarctic Lands, Grenadines, Guadeloupe, Guernsey, Heard Island, Jersey, Madeira Islands, Martinique, Mayotte, Micronesia, Montserrat, Niue, Norfolk Island, Pitcairn Islands, Reunion, Saba, Saint Barthelemy, Saint Helena, Saint Martin, Saint Pierre and Miquelon, Siachen Glacier, Sint Eustatius, South Georgia, South Sandwich Islands, Vatican, Virgin Islands, Wallis and Futuna, Western Sahara
+
+
+wdi$ccode <- countrycode(wdi$country,origin="country.name",destination="wb")
+Warning message:
+  In countrycode(wdi$country, origin = "country.name", destination = "wb") :
+  Some values were not matched unambiguously: Arab World, Caribbean small states, Central Europe and the Baltics, Early-demographic dividend, East Asia & Pacific, East Asia & Pacific (excluding high income), East Asia & Pacific (IDA & IBRD countries), Euro area, Europe & Central Asia, Europe & Central Asia (excluding high income), Europe & Central Asia (IDA & IBRD countries), European Union, Fragile and conflict affected situations, Heavily indebted poor countries (HIPC), High income, IBRD only, IDA & IBRD total, IDA blend, IDA only, IDA total, Late-demographic dividend, Latin America & Caribbean, Latin America & Caribbean (excluding high income), Latin America & the Caribbean (IDA & IBRD countries), Least developed countries: UN classification, Low & middle income, Low income, Lower middle income, Middle East & North Africa, Middle East & North Africa (excluding high income), Middle East & North Africa (IDA & IBRD countries), Middle income, North America, Not classified, OECD members, O [... truncated]
+
+merged <- full_join(dat_map, wdi, by="ccode")
+ggplot(merged,aes(x=long,y=lat,group=group,fill=log10(Emit_CO2percap)))+geom_polygon()
+
+  
+
